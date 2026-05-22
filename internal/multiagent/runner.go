@@ -538,7 +538,7 @@ func RunDeepAgent(
 	}
 
 	baseMsgs := historyToMessages(history, appCfg, &ma.EinoMiddleware)
-	baseMsgs = append(baseMsgs, schema.UserMessage(userMessage))
+	baseMsgs = appendUserMessageIfNeeded(baseMsgs, userMessage)
 
 	streamsMainAssistant := func(agent string) bool {
 		if orchMode == "plan_execute" {
@@ -566,6 +566,8 @@ func RunDeepAgent(
 		StreamsMainAssistant:    streamsMainAssistant,
 		EinoRoleTag:             einoRoleTag,
 		CheckpointDir:           ma.EinoMiddleware.CheckpointDir,
+		RunRetryMaxAttempts:     ma.EinoMiddleware.RunRetryMaxAttempts,
+		RunRetryMaxBackoffSec:   ma.EinoMiddleware.RunRetryMaxBackoffSec,
 		McpIDsMu:                &mcpIDsMu,
 		McpIDs:                  &mcpIDs,
 		FilesystemMonitorAgent:  ag,
