@@ -20,6 +20,7 @@ type multiAgentPrepared struct {
 	History            []agent.ChatMessage
 	FinalMessage       string
 	RoleTools          []string
+	RolePrompt         string
 	AssistantMessageID string
 	UserMessageID      string
 }
@@ -67,6 +68,7 @@ func (h *AgentHandler) prepareMultiAgentSession(req *ChatRequest, c *gin.Context
 
 	finalMessage := req.Message
 	var roleTools []string
+	var rolePrompt string
 	if req.WebShellConnectionID != "" {
 		conn, errConn := h.db.GetWebshellConnection(strings.TrimSpace(req.WebShellConnectionID))
 		if errConn != nil || conn == nil {
@@ -74,17 +76,13 @@ func (h *AgentHandler) prepareMultiAgentSession(req *ChatRequest, c *gin.Context
 			return nil, fmt.Errorf("未找到该 WebShell 连接")
 		}
 		webshellContext := BuildWebshellAssistantContext(conn, WebshellSkillHintMultiAgent, req.Message)
-		// WebShell 模式下如果同时指定了角色，追加角色 user_prompt（工具集仍仅限 webshell 专用工具）
 		if req.Role != "" && req.Role != "默认" && h.config != nil && h.config.Roles != nil {
 			if role, exists := h.config.Roles[req.Role]; exists && role.Enabled && role.UserPrompt != "" {
-				finalMessage = role.UserPrompt + "\n\n" + webshellContext
+				rolePrompt = role.UserPrompt
 				h.logger.Info("WebShell + 角色: 应用角色提示词（多代理）", zap.String("role", req.Role))
-			} else {
-				finalMessage = webshellContext
 			}
-		} else {
-			finalMessage = webshellContext
 		}
+		finalMessage = webshellContext
 		roleTools = []string{
 			builtin.ToolWebshellExec,
 			builtin.ToolWebshellFileList,
@@ -104,9 +102,7 @@ func (h *AgentHandler) prepareMultiAgentSession(req *ChatRequest, c *gin.Context
 		}
 	} else if req.Role != "" && req.Role != "默认" && h.config != nil && h.config.Roles != nil {
 		if role, exists := h.config.Roles[req.Role]; exists && role.Enabled {
-			if role.UserPrompt != "" {
-				finalMessage = role.UserPrompt + "\n\n" + req.Message
-			}
+			rolePrompt = role.UserPrompt
 			roleTools = role.Tools
 		}
 	}
@@ -146,6 +142,7 @@ func (h *AgentHandler) prepareMultiAgentSession(req *ChatRequest, c *gin.Context
 		History:            agentHistoryMessages,
 		FinalMessage:       finalMessage,
 		RoleTools:          roleTools,
+		RolePrompt:         rolePrompt,
 		AssistantMessageID: assistantMessageID,
 		UserMessageID:      userMessageID,
 	}, nil

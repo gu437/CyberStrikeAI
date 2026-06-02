@@ -242,7 +242,7 @@ func (h *AgentHandler) MultiAgentLoopStream(c *gin.Context) {
 			h.agentsMarkdownDir,
 			orch,
 			chatReasoningToClientIntent(req.Reasoning),
-			h.projectBlackboardBlock(conversationID),
+			h.buildSystemPromptExtra("", conversationID),
 		)
 
 		if result != nil && len(result.MCPExecutionIDs) > 0 {
@@ -395,7 +395,7 @@ func (h *AgentHandler) MultiAgentLoopStream(c *gin.Context) {
 	sendEvent("done", "", map[string]interface{}{"conversationId": conversationID})
 }
 
-// MultiAgentLoop Eino DeepAgent 非流式对话（需 multi_agent.enabled）。
+// MultiAgentLoop Eino DeepAgent 非流式对话（与 POST /api/agent-loop 对齐，需 multi_agent.enabled）。
 func (h *AgentHandler) MultiAgentLoop(c *gin.Context) {
 	if h.config == nil || !h.config.MultiAgent.Enabled {
 		c.JSON(http.StatusNotFound, gin.H{"error": "多代理未启用，请在 config.yaml 中设置 multi_agent.enabled: true"})
@@ -444,7 +444,7 @@ func (h *AgentHandler) MultiAgentLoop(c *gin.Context) {
 		h.agentsMarkdownDir,
 		strings.TrimSpace(req.Orchestration),
 		chatReasoningToClientIntent(req.Reasoning),
-		h.projectBlackboardBlock(prep.ConversationID),
+		h.buildSystemPromptExtra(prep.RolePrompt, prep.ConversationID),
 	)
 	if runErr != nil {
 		if shouldPersistEinoAgentTraceAfterRunError(baseCtx) {

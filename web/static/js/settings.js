@@ -40,7 +40,7 @@ function syncRobotAgentModeSelectOptions(multiEnabled) {
         if (opt) opt.disabled = !multiEnabled;
     });
     if (!multiEnabled && ['deep', 'plan_execute', 'supervisor'].indexOf(sel.value) >= 0) {
-        sel.value = 'eino_single';
+        sel.value = 'react';
     }
 }
 
@@ -227,7 +227,8 @@ async function loadConfig(loadTools = true) {
         }
         const maRobotMode = document.getElementById('multi-agent-robot-mode');
         if (maRobotMode) {
-            let mode = (ma.robot_default_agent_mode || 'eino_single').trim().toLowerCase();
+            let mode = (ma.robot_default_agent_mode || 'react').trim().toLowerCase();
+            if (mode === 'single') mode = 'react';
             maRobotMode.value = mode;
             syncRobotAgentModeSelectOptions(ma.enabled === true);
         }
@@ -1159,9 +1160,9 @@ async function applySettings() {
                 const peParsed = parseInt(peRaw, 10);
                 const peLoop = Number.isNaN(peParsed) ? 0 : Math.max(0, peParsed);
                 const maEnabled = document.getElementById('multi-agent-enabled')?.checked === true;
-                let robotMode = document.getElementById('multi-agent-robot-mode')?.value || 'eino_single';
+                let robotMode = document.getElementById('multi-agent-robot-mode')?.value || 'react';
                 if (!maEnabled && ['deep', 'plan_execute', 'supervisor'].indexOf(robotMode) >= 0) {
-                    robotMode = 'eino_single';
+                    robotMode = 'react';
                 }
                 return {
                     enabled: maEnabled,
@@ -1414,7 +1415,7 @@ async function saveToolsConfig() {
             agent: currentConfig.agent || {},
             multi_agent: {
                 enabled: currentConfig?.multi_agent?.enabled === true,
-                robot_default_agent_mode: currentConfig?.multi_agent?.robot_default_agent_mode || 'eino_single',
+                robot_default_agent_mode: currentConfig?.multi_agent?.robot_default_agent_mode || 'react',
                 batch_use_multi_agent: currentConfig?.multi_agent?.batch_use_multi_agent === true,
                 plan_execute_loop_max_iterations: Number(currentConfig?.multi_agent?.plan_execute_loop_max_iterations || 0),
                 tool_search_always_visible_tools: Array.from(alwaysVisibleToolNames).filter(name => !alwaysVisibleBuiltinToolNames.has(name))

@@ -16,16 +16,9 @@ final class CyberStrikeAITab implements ITab {
     private final JTextField portField = new JTextField("8080");
     private final JCheckBox useHttpsBox = new JCheckBox("HTTPS", true);
     private final JPasswordField passwordField = new JPasswordField();
-    private final JComboBox<String> agentModeBox = new JComboBox<>(agentModeLabels());
-    private static String[] agentModeLabels() {
-        CyberStrikeAIClient.AgentMode[] modes = CyberStrikeAIClient.AgentMode.values();
-        String[] labels = new String[modes.length];
-        for (int i = 0; i < modes.length; i++) {
-            labels[i] = modes[i].displayName;
-        }
-        return labels;
-    }
-
+    private final JComboBox<String> agentModeBox = new JComboBox<>(new String[]{
+            "Native ReAct", "Eino Single (ADK)", "Deep (DeepAgent)", "Plan-Execute", "Supervisor"
+    });
     private final JButton validateButton = new JButton("Validate");
     private final JButton clearButton = new JButton("Clear Output");
     private final JButton stopButton = new JButton("Stop");
@@ -561,7 +554,7 @@ final class CyberStrikeAITab implements ITab {
         int idx = agentModeBox.getSelectedIndex();
         CyberStrikeAIClient.AgentMode mode = (idx >= 0 && idx < AGENT_MODES.length)
                 ? AGENT_MODES[idx]
-                : CyberStrikeAIClient.AgentMode.EINO_SINGLE;
+                : CyberStrikeAIClient.AgentMode.NATIVE_REACT;
         return new CyberStrikeAIClient.Config(baseUrl, password, mode);
     }
 

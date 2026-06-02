@@ -4,8 +4,22 @@ import (
 	"cyberstrike-ai/internal/project"
 )
 
-// DefaultSingleAgentSystemPrompt 单代理（Eino ADK / MCP）内置系统提示；可通过 agent.system_prompt_path 覆盖为文件。
+// CacheStaticSystemPrompt 返回纯静态的核心提示词。
+// 此函数返回的文本在任何请求、角色、项目中完全相同，
+// 用作 LLM Prompt Cache 的第一段锚点（~2000+ tokens）。
+func CacheStaticSystemPrompt() string {
+	return legacySingleAgentSystemPrompt()
+}
+
+// DefaultSingleAgentSystemPrompt 单代理（ReAct / MCP）内置系统提示；可通过 agent.system_prompt_path 覆盖为文件。
+// Deprecated: 新代码应使用 CacheStaticSystemPrompt()，然后将 projectBlackboard/rolePrompt 作为独立的段2 system message。
+// 保留以向后兼容未迁移的调用方。
 func DefaultSingleAgentSystemPrompt() string {
+	return legacySingleAgentSystemPrompt()
+}
+
+// legacySingleAgentSystemPrompt 原始提示词，保持内容不变。
+func legacySingleAgentSystemPrompt() string {
 	return `你是CyberStrikeAI，是一个专业的网络安全渗透测试专家。你可以使用各种安全工具进行自主渗透测试。分析目标并选择最佳测试策略。
 
 授权状态：
@@ -112,6 +126,6 @@ func DefaultSingleAgentSystemPrompt() string {
 ## 技能库（Skills）与知识库
 
 - 技能包位于服务器 skills/ 目录（各子目录 SKILL.md，遵循 agentskills.io）；知识库用于向量检索片段，Skills 为可执行工作流指令。
-- 本会话通过 MCP 使用知识库与漏洞记录等。Skills 由 Eino ADK skill 工具按需加载（配置 multi_agent.eino_skills；单代理与多代理均可，未启用时无 skill 工具）。
-- 需要完整 Skill 工作流但当前无 skill 工具时，请确认已启用 multi_agent.eino_skills，或改用 Deep / Supervisor 等多代理编排（/api/multi-agent/stream）。`
+- 单代理本会话通过 MCP 使用知识库与漏洞记录等；Skills 的渐进式加载在「多代理 / Eino DeepAgent」中由内置 skill 工具完成（需在配置中启用 multi_agent.eino_skills）。
+- 若当前无 skill 工具，需要完整 Skill 工作流时请使用多代理模式或切换为 Eino 编排会话（亦可选 Eino ADK 单代理路径 /api/eino-agent）。`
 }

@@ -127,7 +127,7 @@ func RunDeepAgent(
 	}
 
 	toolInvokeNotify := einomcp.NewToolInvokeNotifyHolder()
-	mainDefs := ag.ToolsForRole(roleTools)
+	mainDefs := ag.ToolsForRole(roleTools, true)
 	toolOutputChunk := func(toolName, toolCallID, chunk string) {
 		// When toolCallId is missing, frontend ignores tool_result_delta.
 		if progress == nil || toolCallID == "" {
@@ -219,7 +219,7 @@ func RunDeepAgent(
 				return nil, fmt.Errorf("子代理 %q ChatModel: %w", id, err)
 			}
 
-			subDefs := ag.ToolsForRole(roleTools)
+			subDefs := ag.ToolsForRole(roleTools, true)
 			subTools, err := einomcp.ToolsFromDefinitions(ag, holder, subDefs, recorder, toolOutputChunk, toolInvokeNotify, id)
 			if err != nil {
 				return nil, fmt.Errorf("子代理 %q 工具: %w", id, err)

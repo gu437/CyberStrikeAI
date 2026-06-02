@@ -30,3 +30,20 @@ func (h *AgentHandler) projectBlackboardBlock(conversationID string) string {
 	}
 	return strings.TrimSpace(block)
 }
+
+// buildSystemPromptExtra 构建 system prompt 的动态段2。
+// 包含角色提示词 + 项目黑板索引，两者用换行分隔。
+// rolePrompt 为空时仅返回项目黑板内容。
+func (h *AgentHandler) buildSystemPromptExtra(rolePrompt, conversationID string) string {
+	projectBlock := h.projectBlackboardBlock(conversationID)
+	rolePrompt = strings.TrimSpace(rolePrompt)
+
+	var parts []string
+	if rolePrompt != "" {
+		parts = append(parts, "## 角色设定\n"+rolePrompt)
+	}
+	if projectBlock != "" {
+		parts = append(parts, projectBlock)
+	}
+	return strings.Join(parts, "\n\n")
+}
